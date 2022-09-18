@@ -17,7 +17,7 @@ class ContextManager(ABC):
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.s.close()
         if exc_type or exc_value:
-            logger.error(exc_type)
+            logger.error(f'{exc_type}: {exc_value}')
             return False
         return True
 

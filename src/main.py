@@ -1,10 +1,15 @@
 import logging
 import os
+from pathlib import Path
 from book_court import BookCourt
 
-# for CRON jobs, to write to /tmp folder
 
-log_path = '/tmp/book_condo.log'
+
+path = Path(os.getcwd())
+log_path = f'{path.parent.absolute()}/condo_booking/book_condo.log'
+
+# for CRON jobs, need specify the absolute path directly, path returned is /home/$USER
+log_path = '/home/daronphang/Documents/coding_projects/condo_booking/book_condo.log'
 
 def setup_logger():
     # configure logging

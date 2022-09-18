@@ -20,7 +20,7 @@ $ sh condo_booking.sh
 
 ### CRON
 
-Add to crontab.
+Add to crontab. For logging, need provide absolute path, unable to use os or pathlib modules.
 
 ```
 1 0 * * * /path/to/directory/condo_booking.sh

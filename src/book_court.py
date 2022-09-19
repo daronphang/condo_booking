@@ -3,9 +3,10 @@ import logging
 import requests
 import datetime
 import json
+import asyncio
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from utils import GetConnSession,PostConnSession
+from utils import GetConnSession, PostConnSession, exponential_backoff
 
 load_dotenv()
 
@@ -62,9 +63,9 @@ class BookCourt:
                 raise Exception('unable to login')
             self.jar.update(r.cookies)
             logger.info('login successful')
-
-        
-    def book_court(self):
+    
+    async def book_court_wrapper(self):
+        await asyncio.sleep(58)
         next_week_date = datetime.date.today() + datetime.timedelta(days=6)
         # 2022-09-19T06%3A00%3A00.000Z
         book_date = f'{next_week_date.strftime("%Y-%m-%d")}T11:00:00.000Z'
@@ -88,6 +89,11 @@ class BookCourt:
             'COOKIES': self.jar,
             'HEADERS': {'Content-Type': 'application/x-www-form-urlencoded'},
         }
+
+        self.book_court(config, book_date)
+
+    @exponential_backoff(Exception)
+    def book_court(self, config, book_date):
         with PostConnSession(config) as r:
             resp = json.loads(r.text)
             if r.status_code >= 400 or resp['alert']['Heading'] != 'Booking Successful':
@@ -96,11 +102,18 @@ class BookCourt:
             logger.info(f'booking for {book_date} successful')
 
     def execute(self):
+        # async to run 2s before 00:00:00
+        # assumes login cookie has been secured for faster request
+        # to send multiple requests to server for higher chance of booking
+        # similar to DDoS
+        asyncio.run(self.book_court_wrapper())
+
+        # execute at 23:59:00
+        # to get login credentials
         self.get_token()
         self.login()
-        self.book_court()
 
-
+        
 '''
 FacilityId: 92
 FacilityTypeId: 1041

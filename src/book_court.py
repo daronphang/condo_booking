@@ -64,12 +64,26 @@ class BookCourt:
             self.jar.update(r.cookies)
             logger.info('login successful')
     
-    async def book_court_wrapper(self):
-        await asyncio.sleep(58)
-        next_week_date = datetime.date.today() + datetime.timedelta(days=6)
-        # 2022-09-19T06%3A00%3A00.000Z
-        book_date = f'{next_week_date.strftime("%Y-%m-%d")}T11:00:00.000Z'
+    async def get_login_session(self):
+        # execute at 23:59:00
+        await asyncio.sleep(1)
+        logger.info('attempting to login...')
+        self.get_token()
+        self.login()
+        
+    
+    async def prepare_book_court(self):
+        # to run 2s before 00:00:00
+        # assumes login cookie has been secured for faster request
+        # to send multiple requests to server for higher chance of booking
+        # similar to DDoS
 
+        next_week_date = datetime.date.today() + datetime.timedelta(days=6)
+        book_date = f'{next_week_date.strftime("%Y-%m-%d")}T11:00:00.000Z'  # 2022-09-19T06%3A00%3A00.000Z
+        
+        await asyncio.sleep(58)
+        logger.info('attempting to book court...')
+        
         config = {
             'URL': 'https://grandeur8.net/facilities/booking',
             'DATA': {
@@ -101,18 +115,14 @@ class BookCourt:
                 raise Exception(f'unable to book court at {book_date}')
             logger.info(f'booking for {book_date} successful')
 
-    def execute(self):
-        # async to run 2s before 00:00:00
-        # assumes login cookie has been secured for faster request
-        # to send multiple requests to server for higher chance of booking
-        # similar to DDoS
-        asyncio.run(self.book_court_wrapper())
+    async def execute(self):
+        # to run both functions concurrently
+        # first is to retrieve login session
+        # second is to book court with session cookies
+        await asyncio.gather(self.get_login_session(), self.prepare_book_court())
 
-        # execute at 23:59:00
-        # to get login credentials
-        self.get_token()
-        self.login()
 
+    
         
 '''
 FacilityId: 92

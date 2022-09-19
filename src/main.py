@@ -1,5 +1,6 @@
 import logging
 import os
+import asyncio
 from pathlib import Path
 from book_court import BookCourt
 
@@ -20,5 +21,5 @@ def setup_logger():
 
 if __name__ == '__main__':
     setup_logger()
-    BookCourt().execute()
+    asyncio.run(BookCourt().execute())
     logging.info('completed...')

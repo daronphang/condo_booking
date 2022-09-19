@@ -13,9 +13,9 @@ def exponential_backoff(exc, tries=15, delay=0, backoff=1):
                 try:
                     return f(*args, **kwargs)
                 except exc:
-                    retry_msg = f'{exc.message}. Retrying in {exp_delay} seconds... Retries left: {retry}'
+                    retry_msg = f'{exc}. Retrying in {exp_delay} seconds... Retries left: {retry}'
                     logger.warning(retry_msg)
-                    time.sleep(exp_delay)
+                    time.sleep(0.2)
                     retry -= 1
                     exp_delay *= backoff
             return f(*args, **kwargs)

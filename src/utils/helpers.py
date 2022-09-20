@@ -4,7 +4,7 @@ from functools import wraps
 
 logger = logging.getLogger(__name__)
 
-def exponential_backoff(exc, tries=15, delay=0, backoff=1):
+def exponential_backoff(exc, tries=15, delay=0.1, backoff=1):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -15,7 +15,7 @@ def exponential_backoff(exc, tries=15, delay=0, backoff=1):
                 except exc:
                     retry_msg = f'{exc}. Retrying in {exp_delay} seconds... Retries left: {retry}'
                     logger.warning(retry_msg)
-                    time.sleep(0.2)
+                    time.sleep(exp_delay)
                     retry -= 1
                     exp_delay *= backoff
             return f(*args, **kwargs)

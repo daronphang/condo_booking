@@ -21,6 +21,7 @@ class BookCourt:
         self.jar = requests.cookies.RequestsCookieJar()
         self._csrf_token = None
 
+    @exponential_backoff(Exception)
     def get_token(self):
         config = {
             'URL': 'https://grandeur8.net/account/login',
@@ -40,7 +41,8 @@ class BookCourt:
             soup = BeautifulSoup(r.text, features='html.parser')
             self._csrf_token = soup.find('input', {'name': '__RequestVerificationToken'}).get('value')
             logger.info('retrieve token successful')
-            
+
+    @exponential_backoff(Exception)        
     def login(self):
         config = {
             'URL': 'https://grandeur8.net/account/login',
@@ -73,15 +75,15 @@ class BookCourt:
         
     
     async def prepare_book_court(self):
-        # to run 2s before 00:00:00
+        # to run 3s before 00:00:00
         # assumes login cookie has been secured for faster request
         # to send multiple requests to server for higher chance of booking
         # similar to DDoS
 
-        next_week_date = datetime.date.today() + datetime.timedelta(days=6)
+        next_week_date = datetime.date.today() + datetime.timedelta(days=7)
         book_date = f'{next_week_date.strftime("%Y-%m-%d")}T11:00:00.000Z'  # 2022-09-19T06%3A00%3A00.000Z
         
-        await asyncio.sleep(58)
+        await asyncio.sleep(57)
         logger.info('attempting to book court...')
         
         config = {
@@ -106,7 +108,7 @@ class BookCourt:
 
         self.book_court(config, book_date)
 
-    @exponential_backoff(Exception)
+    @exponential_backoff(Exception,15,0.1,1)
     def book_court(self, config, book_date):
         with PostConnSession(config) as r:
             resp = json.loads(r.text)

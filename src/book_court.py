@@ -21,6 +21,7 @@ class BookCourt:
         self.jar = requests.cookies.RequestsCookieJar()
         self._csrf_token = None
 
+    @exponential_backoff(Exception)
     def get_token(self):
         config = {
             'URL': 'https://grandeur8.net/account/login',
@@ -40,7 +41,8 @@ class BookCourt:
             soup = BeautifulSoup(r.text, features='html.parser')
             self._csrf_token = soup.find('input', {'name': '__RequestVerificationToken'}).get('value')
             logger.info('retrieve token successful')
-            
+
+    @exponential_backoff(Exception)        
     def login(self):
         config = {
             'URL': 'https://grandeur8.net/account/login',
@@ -106,7 +108,7 @@ class BookCourt:
 
         self.book_court(config, book_date)
 
-    @exponential_backoff(Exception)
+    @exponential_backoff(Exception,15,0.1,1)
     def book_court(self, config, book_date):
         with PostConnSession(config) as r:
             resp = json.loads(r.text)

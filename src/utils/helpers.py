@@ -4,7 +4,7 @@ from functools import wraps
 
 logger = logging.getLogger(__name__)
 
-def exponential_backoff(exc, tries=15, delay=0.1, backoff=1):
+def exponential_backoff(exc, tries=3, delay=1, backoff=2):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
